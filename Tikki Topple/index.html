@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tikki Topple – Totem Domination</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== DESIGN SYSTEM ===== */
+:root {
+  --sand:    #F5E6C8;
+  --sand2:   #EDD9A3;
+  --wood:    #8B4513;
+  --wood2:   #6B3410;
+  --fire:    #FF6B35;
+  --fire2:   #FFB347;
+  --ocean:   #1A6B8A;
+  --ocean2:  #0D4F6B;
+  --leaf:    #2D8C45;
+  --leaf2:   #1F6333;
+  --sky:     #87CEEB;
+  --dark:    #1C1008;
+  --p0:      #E63946; /* Red */
+  --p1:      #4361EE; /* Blue */
+  --p2:      #2DC653; /* Green */
+  --p3:      #FF9F1C; /* Orange */
+  --p0l:     #FADADD;
+  --p1l:     #D6DCFF;
+  --p2l:     #C8F5D4;
+  --p3l:     #FFF0D0;
+  --radius:  14px;
+  --shadow:  0 4px 20px rgba(0,0,0,0.18);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #0D2B1D;
+  background-image:
+    radial-gradient(ellipse at 20% 80%, rgba(45,140,69,0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(26,107,138,0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(139,69,19,0.15) 0%, transparent 70%);
+  min-height: 100vh;
+  color: var(--dark);
+  overflow-x: hidden;
+}
+
+/* ===== SCREENS ===== */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ===== SETUP SCREEN ===== */
+#setup-screen {
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.setup-box {
+  background: var(--sand);
+  border-radius: 24px;
+  padding: 36px 40px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.setup-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, var(--p0) 0px, var(--p0) 25%, var(--p1) 25%, var(--p1) 50%, var(--p2) 50%, var(--p2) 75%, var(--p3) 75%, var(--p3) 100%);
+}
+
+.game-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 48px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--fire) 0%, var(--wood) 50%, var(--fire2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-bottom: 4px;
+  text-shadow: none;
+  filter: drop-shadow(2px 2px 0px rgba(139,69,19,0.3));
+}
+
+.game-tagline {
+  text-align: center;
+  font-size: 13px;
+  color: var(--wood);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.setup-section {
+  margin-bottom: 22px;
+}
+
+.setup-label {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--wood2);
+  margin-bottom: 10px;
+}
+
+.player-count-row {
+  display: flex;
+  gap: 8px;
+}
+
+.count-btn {
+  flex: 1;
+  padding: 12px 8px;
+  border: 2.5px solid var(--sand2);
+  border-radius: var(--radius);
+  background: white;
+  font-family: 'Fredoka One', cursive;
+  font-size: 22px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--wood);
+  text-align: center;
+}
+.count-btn:hover { border-color: var(--fire); transform: translateY(-2px); }
+.count-btn.selected {
+  background: var(--fire);
+  border-color: var(--fire);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255,107,53,0.4);
+}
+
+.player-names {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-color-dot {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2.5px solid rgba(0,0,0,0.15);
+}
+
+.name-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid var(--sand2);
+  border-radius: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  background: white;
+  color: var(--dark);
+  transition: border-color 0.15s;
+  outline: none;
+}
+.name-input:focus { border-color: var(--fire); }
+
+.turn-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.turn-btn {
+  padding: 8px 16px;
+  border: 2px solid var(--sand2);
+  border-radius: 10px;
+  background: white;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--wood);
+  transition: all 0.15s;
+}
+.turn-btn:hover { border-color: var(--ocean); }
+.turn-btn.selected {
+  background: var(--ocean);
+  border-color: var(--ocean);
+  color: white;
+}
+
+.start-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--fire) 0%, #e85a2b 100%);
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'Fredoka One', cursive;
+  font-size: 22px;
+  color: white;
+  cursor: pointer;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 20px rgba(255,107,53,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: all 0.15s;
+  margin-top: 8px;
+}
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(255,107,53,0.6); }
+.start-btn:active { transform: translateY(0); }
+
+/* ===== GAME SCREEN ===== */
+#game-screen {
+  padding: 12px;
+  gap: 10px;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(245,230,200,0.12);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  border: 1px solid rgba(245,230,200,0.2);
+}
+
+.header-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 24px;
+  color: var(--sand);
+  letter-spacing: 1px;
+}
+
+.turn-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.turn-label { font-size: 11px; font-weight: 800; color: rgba(245,230,200,0.5); text-transform: uppercase; letter-spacing: 0.5px; }
+.turn-value { font-family: 'Fredoka One', cursive; font-size: 22px; color: var(--fire2); }
+
+.new-game-btn {
+  padding: 8px 14px;
+  background: rgba(245,230,200,0.15);
+  border: 1.5px solid rgba(245,230,200,0.3);
+  border-radius: 10px;
+  color: var(--sand);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.new-game-btn:hover { background: rgba(245,230,200,0.25); }
+
+/* ===== CURRENT PLAYER BANNER ===== */
+.current-player-banner {
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+/* ===== MAIN LAYOUT ===== */
+.game-body {
+  display: grid;
+  grid-template-columns: 220px 1fr 200px;
+  gap: 10px;
+  flex: 1;
+}
+
+@media (max-width: 900px) {
+  .game-body { grid-template-columns: 1fr 1fr; }
+  .board-panel { grid-column: 1 / -1; order: -1; }
+}
+@media (max-width: 600px) {
+  .game-body { grid-template-columns: 1fr; }
+}
+
+/* ===== PANELS ===== */
+.panel {
+  background: var(--sand);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+
+.panel-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 15px;
+  color: var(--wood2);
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 2px solid var(--sand2);
+  padding-bottom: 8px;
+}
+
+.panel-title .icon { font-size: 18px; }
+
+/* ===== STACK PANEL ===== */
+.stack-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+/* Stack pole behind tikkis */
+.stack-pole {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  background: linear-gradient(180deg, var(--wood2), var(--wood));
+  border-radius: 4px;
+  top: 10px;
+  bottom: 10px;
+  z-index: 0;
+}
+
+.tikki {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 2.5px solid transparent;
+  cursor: default;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-size: 13px;
+  font-weight: 700;
+  background: white;
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+}
+
+.tikki.interactive {
+  cursor: pointer;
+}
+.tikki.interactive:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+.tikki.selected {
+  transform: translateX(8px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+
+.tikki-face {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  border: 2px solid rgba(0,0,0,0.1);
+  font-family: 'Fredoka One', cursive;
+  color: white;
+  font-size: 11px;
+}
+
+.tikki-label {
+  flex: 1;
+  font-size: 12px;
+  color: var(--dark);
+  font-weight: 700;
+}
+
+.tikki-pos {
+  font-size: 11px;
+  color: #888;
+  font-weight: 600;
+}
+
+.tikki-rank-badge {
+  position: absolute;
+  right: -6px;
+  top: -6px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid white;
+  color: white;
+}
+
+.top-indicator {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--wood);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+  opacity: 0.6;
+}
+.bottom-indicator {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--wood);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+  opacity: 0.6;
+}
+
+/* ===== ACTION PANEL ===== */
+.action-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.mode-tab {
+  padding: 10px 6px;
+  border-radius: 10px;
+  border: 2px solid var(--sand2);
+  background: white;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  color: var(--wood);
+  line-height: 1.3;
+}
+.mode-tab:hover { border-color: var(--fire); }
+.mode-tab.active-move {
+  background: linear-gradient(135deg, var(--leaf), var(--leaf2));
+  border-color: var(--leaf2);
+  color: white;
+  box-shadow: 0 3px 12px rgba(45,140,69,0.4);
+}
+.mode-tab.active-reorder {
+  background: linear-gradient(135deg, var(--ocean), var(--ocean2));
+  border-color: var(--ocean2);
+  color: white;
+  box-shadow: 0 3px 12px rgba(26,107,138,0.4);
+}
+
+.action-hint {
+  background: rgba(139,69,19,0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--wood2);
+  font-weight: 600;
+  margin-bottom: 12px;
+  border-left: 3px solid var(--fire2);
+  line-height: 1.5;
+}
+
+.confirm-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+.confirm-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none !important;
+}
+.confirm-btn.move-confirm {
+  background: linear-gradient(135deg, var(--leaf), var(--leaf2));
+  color: white;
+  box-shadow: 0 3px 12px rgba(45,140,69,0.4);
+}
+.confirm-btn.move-confirm:hover:not(:disabled) { transform: translateY(-2px); }
+.confirm-btn.reorder-confirm {
+  background: linear-gradient(135deg, var(--ocean), var(--ocean2));
+  color: white;
+  box-shadow: 0 3px 12px rgba(26,107,138,0.4);
+}
+.confirm-btn.reorder-confirm:hover:not(:disabled) { transform: translateY(-2px); }
+
+/* Reorder area */
+.reorder-area {
+  background: rgba(26,107,138,0.06);
+  border: 2px dashed rgba(26,107,138,0.3);
+  border-radius: 10px;
+  padding: 10px;
+  min-height: 80px;
+}
+.reorder-slots-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ocean);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.reorder-slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-sm);
+}
+.reorder-slot:hover { transform: translateX(3px); }
+.reorder-slot:last-child { margin-bottom: 0; }
+.slot-number {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--ocean);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.slot-drag-hint {
+  margin-left: auto;
+  font-size: 10px;
+  color: #aaa;
+}
+
+.selection-count {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--wood);
+  padding: 6px;
+  background: rgba(139,69,19,0.06);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+/* ===== BOARD PANEL ===== */
+.board-panel {
+  overflow: hidden;
+}
+
+.board-scroll {
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.board-track {
+  display: flex;
+  gap: 4px;
+  min-width: max-content;
+  padding: 4px 2px;
+}
+
+.board-cell {
+  width: 52px;
+  min-width: 52px;
+  height: 70px;
+  border-radius: 10px;
+  background: white;
+  border: 2px solid var(--sand2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 4px;
+  transition: border-color 0.2s;
+}
+
+.board-cell.start-cell {
+  background: linear-gradient(135deg, #FFF9EC, #FFF0CC);
+  border-color: var(--fire2);
+}
+
+.board-cell.end-cell {
+  background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+  border-color: var(--leaf);
+  border-width: 2.5px;
+}
+
+.cell-number {
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(139,69,19,0.4);
+  position: absolute;
+  top: 3px;
+  left: 0; right: 0;
+  text-align: center;
+}
+
+.cell-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--leaf2);
+  position: absolute;
+  top: 3px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tokens-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  padding: 12px 2px 2px;
+}
+
+.board-token {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,0,0,0.15);
+  flex-shrink: 0;
+  position: relative;
+  cursor: default;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.board-token:hover { transform: scale(1.3); z-index: 10; }
+
+/* Stack order indicator at bottom */
+.cell-stack-indicator {
+  font-size: 8px;
+  color: rgba(139,69,19,0.5);
+  font-weight: 700;
+  position: absolute;
+  bottom: 2px;
+  right: 3px;
+}
+
+/* ===== SCORES PANEL ===== */
+.score-card {
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 2px solid transparent;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.score-card.current-turn {
+  border-width: 2.5px;
+  box-shadow: var(--shadow-sm);
+}
+.score-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 4px;
+}
+
+.score-name {
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.score-points {
+  font-family: 'Fredoka One', cursive;
+  font-size: 22px;
+  line-height: 1;
+}
+.score-pts-label {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+.score-tokens {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.score-token-dot {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 6px;
+}
+
+.current-turn-crown {
+  font-size: 14px;
+  position: absolute;
+  top: 8px; right: 10px;
+}
+
+/* ===== GAME LOG ===== */
+.game-log {
+  margin-top: 8px;
+  max-height: 100px;
+  overflow-y: auto;
+  background: rgba(139,69,19,0.06);
+  border-radius: 8px;
+  padding: 8px;
+}
+.log-entry {
+  font-size: 11px;
+  color: var(--wood2);
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(139,69,19,0.1);
+  font-weight: 600;
+}
+.log-entry:last-child { border-bottom: none; }
+
+/* ===== END OVERLAY ===== */
+#end-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,20,10,0.85);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+#end-overlay.show { display: flex; animation: fadeIn 0.4s ease; }
+
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+.end-card {
+  background: var(--sand);
+  border-radius: 24px;
+  padding: 36px;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
+}
+.end-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: repeating-linear-gradient(90deg, var(--p0) 0px, var(--p0) 25%, var(--p1) 25%, var(--p1) 50%, var(--p2) 50%, var(--p2) 75%, var(--p3) 75%, var(--p3) 100%);
+}
+
+.end-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 36px;
+  color: var(--fire);
+  margin-bottom: 4px;
+}
+.end-subtitle {
+  font-size: 13px;
+  color: var(--wood);
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.podium {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.podium-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: white;
+  border: 2px solid var(--sand2);
+}
+.podium-row:first-child {
+  background: linear-gradient(135deg, #FFF9C4, #FFF176);
+  border-color: #F9A825;
+  box-shadow: 0 4px 16px rgba(249,168,37,0.3);
+}
+
+.podium-medal {
+  font-size: 24px;
+  width: 32px;
+  text-align: center;
+}
+.podium-name { flex: 1; font-weight: 800; font-size: 15px; text-align: left; }
+.podium-score { font-family: 'Fredoka One', cursive; font-size: 22px; }
+
+.play-again-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--fire), #e85a2b);
+  border: none;
+  border-radius: 12px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 20px;
+  color: white;
+  cursor: pointer;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 20px rgba(255,107,53,0.5);
+  transition: all 0.15s;
+}
+.play-again-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(255,107,53,0.6); }
+
+/* ===== ANIMATIONS ===== */
+@keyframes bounce-in {
+  0% { transform: scale(0.6) rotate(-5deg); opacity: 0; }
+  60% { transform: scale(1.1) rotate(2deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.tikki.just-selected { animation: bounce-in 0.3s ease forwards; }
+
+@keyframes slide-in-right {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.tikki { animation: slide-in-right 0.2s ease both; }
+
+/* Token move animation */
+@keyframes pulse-move {
+  0% { box-shadow: 0 0 0 0 rgba(45,140,69,0.6); }
+  70% { box-shadow: 0 0 0 10px rgba(45,140,69,0); }
+  100% { box-shadow: 0 0 0 0 rgba(45,140,69,0); }
+}
+.board-token.just-moved { animation: pulse-move 0.5s ease; }
+
+/* ===== TOOLTIP ===== */
+[data-tip] { position: relative; }
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 100%; left: 50%;
+  transform: translateX(-50%);
+  background: var(--dark);
+  color: white;
+  font-size: 10px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+[data-tip]:hover::after { opacity: 1; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: rgba(139,69,19,0.08); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(139,69,19,0.3); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SETUP SCREEN
+============================================================ -->
+<div id="setup-screen" class="screen active">
+  <div class="setup-box">
+    <div class="game-title">Tikki Topple</div>
+    <div class="game-tagline">The Tactical Game of Totem Domination</div>
+
+    <!-- Number of players -->
+    <div class="setup-section">
+      <div class="setup-label">Number of Players</div>
+      <div class="player-count-row" id="player-count-row">
+        <button class="count-btn selected" data-n="2" onclick="selectPlayerCount(2)">2</button>
+        <button class="count-btn" data-n="3" onclick="selectPlayerCount(3)">3</button>
+        <button class="count-btn" data-n="4" onclick="selectPlayerCount(4)">4</button>
+      </div>
+    </div>
+
+    <!-- Player names -->
+    <div class="setup-section">
+      <div class="setup-label">Player Names</div>
+      <div class="player-names" id="player-names-container"></div>
+    </div>
+
+    <!-- Tikkis per player -->
+    <div class="setup-section">
+      <div class="setup-label">Tikkis per Player</div>
+      <div class="player-count-row" id="tikki-count-row">
+        <button class="count-btn" data-t="2" onclick="selectTikkiCount(2)">2</button>
+        <button class="count-btn selected" data-t="3" onclick="selectTikkiCount(3)">3</button>
+        <button class="count-btn" data-t="4" onclick="selectTikkiCount(4)">4</button>
+      </div>
+    </div>
+
+    <!-- Max turns -->
+    <div class="setup-section">
+      <div class="setup-label">Max Turns</div>
+      <div class="turn-selector" id="turn-selector">
+        <button class="turn-btn" data-turns="20" onclick="selectTurns(20)">20</button>
+        <button class="turn-btn selected" data-turns="25" onclick="selectTurns(25)">25</button>
+        <button class="turn-btn" data-turns="30" onclick="selectTurns(30)">30</button>
+      </div>
+    </div>
+
+    <button class="start-btn" onclick="startGame()">🌴 Start Game!</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     GAME SCREEN
+============================================================ -->
+<div id="game-screen" class="screen">
+
+  <!-- Header -->
+  <div class="game-header">
+    <div class="header-title">🌴 Tikki Topple</div>
+    <div class="turn-info">
+      <div class="turn-label">Turn</div>
+      <div class="turn-value" id="turn-display">1</div>
+    </div>
+    <div class="turn-info">
+      <div class="turn-label">Max</div>
+      <div class="turn-value" id="max-turn-display">25</div>
+    </div>
+    <button class="new-game-btn" onclick="goToSetup()">↩ New Game</button>
+  </div>
+
+  <!-- Current player banner -->
+  <div class="current-player-banner" id="current-player-banner">
+    <span id="current-player-dot" style="width:14px;height:14px;border-radius:50%;display:inline-block;flex-shrink:0"></span>
+    <span id="current-player-label" style="font-family:'Fredoka One',cursive;font-size:17px;letter-spacing:0.5px;"></span>
+    <span style="margin-left:auto;font-size:13px;font-weight:700;opacity:0.7;" id="action-status-text">Choose an action</span>
+  </div>
+
+  <!-- Main game body -->
+  <div class="game-body">
+
+    <!-- LEFT: Stack Panel -->
+    <div class="panel" id="stack-panel">
+      <div class="panel-title"><span class="icon">🗼</span> Token Stack</div>
+      <div class="top-indicator">▲ TOP</div>
+      <div class="stack-visual" id="stack-visual">
+        <div class="stack-pole" id="stack-pole"></div>
+      </div>
+      <div class="bottom-indicator">▼ BOTTOM</div>
+    </div>
+
+    <!-- CENTER: Board + Actions -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+
+      <!-- Board Panel -->
+      <div class="panel board-panel">
+        <div class="panel-title"><span class="icon">🏝️</span> Game Board</div>
+        <div class="board-scroll">
+          <div class="board-track" id="board-track"></div>
+        </div>
+        <!-- Legend -->
+        <div id="board-legend" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"></div>
+      </div>
+
+      <!-- Actions Panel -->
+      <div class="panel" id="action-panel">
+        <div class="panel-title"><span class="icon">🎯</span> Actions</div>
+
+        <div class="action-mode-tabs">
+          <button class="mode-tab" id="move-tab" onclick="setActionMode('move')">
+            ⬆️ Move<br><span style="font-size:11px;opacity:0.8">top 1–3 forward</span>
+          </button>
+          <button class="mode-tab" id="reorder-tab" onclick="setActionMode('reorder')">
+            🔀 Reorder<br><span style="font-size:11px;opacity:0.8">rearrange top 2–3</span>
+          </button>
+        </div>
+
+        <div class="action-hint" id="action-hint">Select an action above, then click tikkis in the stack.</div>
+
+        <div class="selection-count" id="selection-count" style="display:none;"></div>
+
+        <!-- Reorder area -->
+        <div class="reorder-area" id="reorder-area" style="display:none;">
+          <div class="reorder-slots-title">New order (click to move to end):</div>
+          <div id="reorder-slots"></div>
+        </div>
+
+        <button class="confirm-btn move-confirm" id="confirm-btn" disabled onclick="confirmAction()">
+          Confirm
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Scores -->
+    <div class="panel" id="scores-panel">
+      <div class="panel-title"><span class="icon">🏆</span> Scores</div>
+      <div id="scores-container"></div>
+      <div class="panel-title" style="margin-top:10px;"><span class="icon">📜</span> Log</div>
+      <div class="game-log" id="game-log"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     END OVERLAY
+============================================================ -->
+<div id="end-overlay">
+  <div class="end-card">
+    <div class="end-title">🎉 Game Over!</div>
+    <div class="end-subtitle" id="end-reason">All turns completed!</div>
+    <div class="podium" id="end-podium"></div>
+    <button class="play-again-btn" onclick="goToSetup()">🌴 Play Again!</button>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT – CORE GAME LOGIC
+============================================================ -->
+<script>
+/* ============================================================
+   CONSTANTS & CONFIG
+============================================================ */
+const PLAYER_COLORS  = ['#E63946','#4361EE','#2DC653','#FF9F1C'];
+const PLAYER_LIGHT   = ['#FADADD','#D6DCFF','#C8F5D4','#FFF0D0'];
+const PLAYER_NAMES_DEFAULT = ['Red Player','Blue Player','Green Player','Orange Player'];
+const TIKKI_EMOJIS   = ['😈','🤖','👹','🎃','👾','🦁','🐯','🐸','🦊','🐺','😤','🤡'];
+const MEDALS         = ['🥇','🥈','🥉','4️⃣'];
+
+/* ============================================================
+   SETUP STATE
+============================================================ */
+let setupState = { numPlayers: 2, tikkisPerPlayer: 3, maxTurns: 25 };
+
+function selectPlayerCount(n) {
+  setupState.numPlayers = n;
+  document.querySelectorAll('#player-count-row .count-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.n) === n);
+  });
+  buildPlayerNameInputs();
+}
+
+function selectTikkiCount(n) {
+  setupState.tikkisPerPlayer = n;
+  document.querySelectorAll('#tikki-count-row .count-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.t) === n);
+  });
+}
+
+function selectTurns(n) {
+  setupState.maxTurns = n;
+  document.querySelectorAll('#turn-selector .turn-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.turns) === n);
+  });
+}
+
+function buildPlayerNameInputs() {
+  const container = document.getElementById('player-names-container');
+  const n = setupState.numPlayers;
+  const existing = [];
+  container.querySelectorAll('input').forEach(i => existing.push(i.value));
+  container.innerHTML = '';
+  for (let p = 0; p < n; p++) {
+    const row = document.createElement('div');
+    row.className = 'player-name-row';
+    const dot = document.createElement('div');
+    dot.className = 'player-color-dot';
+    dot.style.background = PLAYER_COLORS[p];
+    const inp = document.createElement('input');
+    inp.className = 'name-input';
+    inp.type = 'text';
+    inp.value = existing[p] || `Player ${p+1}`;
+    inp.placeholder = `Player ${p+1} name`;
+    row.appendChild(dot);
+    row.appendChild(inp);
+    container.appendChild(row);
+  }
+}
+
+// Init setup
+buildPlayerNameInputs();
+
+/* ============================================================
+   GAME STATE
+============================================================ */
+let G = null; // main game state object
+
+/*
+  G = {
+    numPlayers, playerNames[], maxTurns,
+    trackLength,
+    tokens: { id: { id, player, pos, emoji } },
+    stack: [id, id, ...],   // stack[0] = top
+    currentPlayer,
+    turn,          // increments each full round
+    actionNumber,  // total actions taken
+    scores: { 0:n, 1:n, ... },
+    log: [string],
+    ended: bool
+  }
+*/
+
+/* ============================================================
+   GAME INITIALIZATION
+============================================================ */
+function startGame() {
+  const nameInputs = document.querySelectorAll('#player-names-container input');
+  const playerNames = [];
+  nameInputs.forEach((inp, i) => {
+    playerNames.push(inp.value.trim() || `Player ${i+1}`);
+  });
+
+  const n  = setupState.numPlayers;
+  const nt = setupState.tikkisPerPlayer;
+
+  /* Build token objects */
+  const tokens = {};
+  const allIds = [];
+  const usedEmojis = shuffleArray([...TIKKI_EMOJIS]);
+  let emojiIdx = 0;
+
+  for (let p = 0; p < n; p++) {
+    for (let t = 0; t < nt; t++) {
+      const id = `p${p}t${t}`;
+      tokens[id] = {
+        id,
+        player: p,
+        pos: 0,
+        emoji: usedEmojis[emojiIdx++ % usedEmojis.length],
+        label: `${playerNames[p][0].toUpperCase()}${t+1}`
+      };
+      allIds.push(id);
+    }
+  }
+
+  /* Shuffle to create initial stack */
+  const stack = shuffleArray([...allIds]);
+
+  G = {
+    numPlayers: n,
+    playerNames,
+    maxTurns: setupState.maxTurns,
+    trackLength: 12,
+    tokens,
+    stack,
+    currentPlayer: 0,
+    turn: 1,
+    actionNumber: 0,
+    ended: false,
+    log: [`Game started! ${playerNames.join(', ')} are playing.`, `${playerNames[0]}'s turn — choose an action.`]
+  };
+
+  /* Switch to game screen */
+  document.getElementById('setup-screen').classList.remove('active');
+  document.getElementById('game-screen').classList.add('active');
+
+  /* Reset UI state */
+  actionMode = null;
+  selectedIndices = [];
+  reorderOrder = [];
+
+  renderAll();
+}
+
+/* ============================================================
+   ACTION STATE
+============================================================ */
+let actionMode = null;        // 'move' | 'reorder' | null
+let selectedIndices = [];     // stack indices selected (0=top)
+let reorderOrder = [];        // token ids in new reorder sequence
+
+function setActionMode(mode) {
+  if (G.ended) return;
+  actionMode = mode;
+  selectedIndices = [];
+  reorderOrder = [];
+  renderActionPanel();
+  renderStack(); // re-render with interactivity
+}
+
+function onTikkiClick(stackIndex) {
+  if (!actionMode) return;
+  if (stackIndex > 2) return; // only top 3 accessible
+
+  if (actionMode === 'move') {
+    /* Toggle selection for move */
+    const pos = selectedIndices.indexOf(stackIndex);
+    if (pos >= 0) {
+      selectedIndices.splice(pos, 1);
+    } else {
+      if (selectedIndices.length < 3) selectedIndices.push(stackIndex);
+    }
+  } else if (actionMode === 'reorder') {
+    /* Toggle selection for reorder */
+    const pos = selectedIndices.indexOf(stackIndex);
+    if (pos >= 0) {
+      selectedIndices.splice(pos, 1);
+      reorderOrder = selectedIndices.map(i => G.stack[i]);
+    } else {
+      if (selectedIndices.length < 3) {
+        selectedIndices.push(stackIndex);
+        reorderOrder = selectedIndices.map(i => G.stack[i]);
+      }
+    }
+  }
+
+  renderActionPanel();
+  renderStack();
+}
+
+function rotateReorderSlot(slotIndex) {
+  /* Move the clicked slot to the end */
+  const id = reorderOrder.splice(slotIndex, 1)[0];
+  reorderOrder.push(id);
+  renderActionPanel();
+}
+
+/* ============================================================
+   CONFIRM ACTION
+============================================================ */
+function confirmAction() {
+  if (!actionMode) return;
+  if (G.ended) return;
+
+  if (actionMode === 'move') {
+    if (selectedIndices.length < 1 || selectedIndices.length > 3) return;
+    executeMoveAction([...selectedIndices]);
+  } else if (actionMode === 'reorder') {
+    if (reorderOrder.length < 2 || reorderOrder.length > 3) return;
+    executeReorderAction([...reorderOrder]);
+  }
+
+  actionMode = null;
+  selectedIndices = [];
+  reorderOrder = [];
+
+  checkEndCondition();
+  if (!G.ended) advanceTurn();
+  renderAll();
+  if (G.ended) showEndScreen();
+}
+
+/* ============================================================
+   MOVE ACTION
+   Move top N tokens forward 1 step, preserving order
+============================================================ */
+function executeMoveAction(indices) {
+  /* Sort ascending so we process from top */
+  indices.sort((a, b) => a - b);
+  const ids = indices.map(i => G.stack[i]);
+  const names = ids.map(id => G.tokens[id].label).join(', ');
+
+  ids.forEach(id => {
+    const t = G.tokens[id];
+    if (t.pos < G.trackLength) t.pos++;
+  });
+
+  G.actionNumber++;
+  const cp = G.playerNames[G.currentPlayer];
+  addLog(`${cp} moved ${ids.length} tikki(s) [${names}] forward → pos ${G.tokens[ids[0]].pos}`);
+}
+
+/* ============================================================
+   REORDER ACTION
+   Take top 2–3 tokens and rearrange them on the stack
+============================================================ */
+function executeReorderAction(newOrder) {
+  /* newOrder is an array of token IDs in the desired new top-down order */
+  const n = newOrder.length;
+  for (let i = 0; i < n; i++) {
+    G.stack[i] = newOrder[i];
+  }
+  G.actionNumber++;
+  const cp = G.playerNames[G.currentPlayer];
+  const labels = newOrder.map(id => G.tokens[id].label).join(' → ');
+  addLog(`${cp} reordered top ${n} tikkis: ${labels}`);
+}
+
+/* ============================================================
+   TURN MANAGEMENT
+============================================================ */
+function advanceTurn() {
+  G.currentPlayer = (G.currentPlayer + 1) % G.numPlayers;
+  if (G.currentPlayer === 0) G.turn++;
+  addLog(`${G.playerNames[G.currentPlayer]}'s turn (Turn ${G.turn})`);
+}
+
+/* ============================================================
+   END CONDITION
+============================================================ */
+function checkEndCondition() {
+  /* All tokens at final position */
+  const allAtEnd = Object.values(G.tokens).every(t => t.pos >= G.trackLength);
+  /* Turn limit exceeded */
+  const turnsExceeded = G.turn > G.maxTurns;
+
+  if (allAtEnd || turnsExceeded) {
+    G.ended = true;
+    G.endReason = allAtEnd ? 'All tikkis reached the end!' : `${G.maxTurns} turns completed!`;
+    computeFinalScores();
+    addLog('=== GAME OVER ===');
+  }
+}
+
+/* ============================================================
+   SCORING SYSTEM
+   Rank tokens by final position (desc), tie-break by stack order
+   Points: N, N-1, N-2, ... 1
+============================================================ */
+function computeFinalScores() {
+  const tokenList = Object.values(G.tokens);
+  const total = tokenList.length;
+
+  /* Sort descending by pos; tie-break: lower stack index = better */
+  tokenList.sort((a, b) => {
+    if (b.pos !== a.pos) return b.pos - a.pos;
+    return G.stack.indexOf(a.id) - G.stack.indexOf(b.id);
+  });
+
+  tokenList.forEach((t, rank) => {
+    t.rank = rank + 1;
+    t.pts = total - rank; // 1st gets 'total' points, last gets 1
+  });
+
+  /* Aggregate per player */
+  const scores = {};
+  for (let p = 0; p < G.numPlayers; p++) scores[p] = 0;
+  tokenList.forEach(t => { scores[t.player] += t.pts; });
+  G.scores = scores;
+}
+
+/* ============================================================
+   LOG
+============================================================ */
+function addLog(msg) {
+  G.log.unshift(msg);
+  if (G.log.length > 40) G.log.pop();
+}
+
+/* ============================================================
+   RENDER ALL
+============================================================ */
+function renderAll() {
+  renderHeader();
+  renderCurrentPlayerBanner();
+  renderStack();
+  renderBoard();
+  renderScores();
+  renderActionPanel();
+  renderLog();
+}
+
+/* --- Header --- */
+function renderHeader() {
+  document.getElementById('turn-display').textContent = Math.min(G.turn, G.maxTurns);
+  document.getElementById('max-turn-display').textContent = G.maxTurns;
+}
+
+/* --- Current Player Banner --- */
+function renderCurrentPlayerBanner() {
+  const cp = G.currentPlayer;
+  const banner = document.getElementById('current-player-banner');
+  banner.style.background = PLAYER_LIGHT[cp];
+  banner.style.borderColor = PLAYER_COLORS[cp];
+  document.getElementById('current-player-dot').style.background = PLAYER_COLORS[cp];
+  document.getElementById('current-player-label').textContent = `${G.playerNames[cp]}'s Turn`;
+  document.getElementById('current-player-label').style.color = PLAYER_COLORS[cp];
+  document.getElementById('action-status-text').textContent = actionMode ? `Mode: ${actionMode.toUpperCase()}` : 'Choose an action';
+}
+
+/* --- Stack Visual --- */
+function renderStack() {
+  const container = document.getElementById('stack-visual');
+  container.innerHTML = '';
+
+  /* Re-add pole */
+  const pole = document.createElement('div');
+  pole.className = 'stack-pole';
+  container.appendChild(pole);
+
+  G.stack.forEach((id, idx) => {
+    const t = G.tokens[id];
+    const pColor = PLAYER_COLORS[t.player];
+    const pLight = PLAYER_LIGHT[t.player];
+    const isTop3 = idx <= 2;
+    const isSelected = selectedIndices.includes(idx);
+    const isInteractive = actionMode && isTop3;
+
+    const tikki = document.createElement('div');
+    tikki.className = 'tikki' + (isInteractive ? ' interactive' : '') + (isSelected ? ' selected' : '');
+    tikki.style.animationDelay = (idx * 0.04) + 's';
+
+    if (isSelected) {
+      tikki.style.borderColor = pColor;
+      tikki.style.background = pLight;
+      tikki.style.boxShadow = `0 4px 16px ${pColor}55`;
+    } else if (isTop3 && actionMode) {
+      tikki.style.borderColor = pColor + '80';
+    }
+
+    /* Tikki face */
+    const face = document.createElement('div');
+    face.className = 'tikki-face';
+    face.style.background = pColor;
+    face.textContent = t.label;
+    tikki.appendChild(face);
+
+    /* Label */
+    const label = document.createElement('div');
+    label.className = 'tikki-label';
+    label.textContent = G.playerNames[t.player];
+    label.style.color = isSelected ? pColor : '#333';
+    tikki.appendChild(label);
+
+    /* Position */
+    const posEl = document.createElement('div');
+    posEl.className = 'tikki-pos';
+    posEl.textContent = `pos ${t.pos}`;
+    tikki.appendChild(posEl);
+
+    /* TOP badge for index 0 */
+    if (idx === 0) {
+      const badge = document.createElement('div');
+      badge.style.cssText = `position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:${pColor};color:white;font-size:9px;font-weight:800;padding:1px 7px;border-radius:6px;letter-spacing:0.5px;white-space:nowrap;`;
+      badge.textContent = '★ TOP';
+      tikki.appendChild(badge);
+      tikki.style.marginTop = '14px';
+    }
+
+    /* Stack position indicator (not accessible hint) */
+    if (idx > 2) {
+      tikki.style.opacity = '0.65';
+      tikki.style.cursor = 'not-allowed';
+    }
+
+    if (isInteractive) {
+      tikki.addEventListener('click', () => onTikkiClick(idx));
+    }
+
+    container.appendChild(tikki);
+  });
+}
+
+/* --- Board --- */
+function renderBoard() {
+  const track = document.getElementById('board-track');
+  track.innerHTML = '';
+
+  /* Group tokens by position */
+  const byPos = {};
+  for (let p = 0; p <= G.trackLength; p++) byPos[p] = [];
+  Object.values(G.tokens).forEach(t => {
+    if (byPos[t.pos] !== undefined) byPos[t.pos].push(t);
+  });
+
+  for (let pos = 0; pos <= G.trackLength; pos++) {
+    const cell = document.createElement('div');
+    cell.className = 'board-cell';
+    if (pos === 0) cell.classList.add('start-cell');
+    if (pos === G.trackLength) cell.classList.add('end-cell');
+
+    /* Cell number / label */
+    const numEl = document.createElement('div');
+    if (pos === 0) {
+      numEl.className = 'cell-label';
+      numEl.style.color = '#c27b00';
+      numEl.textContent = 'START';
+    } else if (pos === G.trackLength) {
+      numEl.className = 'cell-label';
+      numEl.textContent = 'END';
+    } else {
+      numEl.className = 'cell-number';
+      numEl.textContent = pos;
+    }
+    cell.appendChild(numEl);
+
+    /* Tokens cluster */
+    const cluster = document.createElement('div');
+    cluster.className = 'tokens-cluster';
+
+    /* Sort by stack order for visual consistency */
+    const cellTokens = byPos[pos].sort((a,b) => G.stack.indexOf(a.id) - G.stack.indexOf(b.id));
+    cellTokens.forEach(t => {
+      const dot = document.createElement('div');
+      dot.className = 'board-token';
+      dot.style.background = PLAYER_COLORS[t.player];
+      dot.title = `${G.playerNames[t.player]}: ${t.label} (pos ${t.pos})`;
+      cluster.appendChild(dot);
+    });
+    cell.appendChild(cluster);
+
+    /* Count of tokens */
+    if (cellTokens.length > 0) {
+      const cnt = document.createElement('div');
+      cnt.className = 'cell-stack-indicator';
+      cnt.textContent = cellTokens.length > 1 ? `×${cellTokens.length}` : '';
+      cell.appendChild(cnt);
+    }
+
+    track.appendChild(cell);
+  }
+
+  /* Legend */
+  const legend = document.getElementById('board-legend');
+  legend.innerHTML = '';
+  for (let p = 0; p < G.numPlayers; p++) {
+    const leg = document.createElement('div');
+    leg.style.cssText = `display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px;background:${PLAYER_LIGHT[p]};color:${PLAYER_COLORS[p]};border:1.5px solid ${PLAYER_COLORS[p]}40`;
+    leg.innerHTML = `<span style="width:10px;height:10px;border-radius:50%;background:${PLAYER_COLORS[p]};display:inline-block;border:1.5px solid rgba(0,0,0,0.15)"></span>${G.playerNames[p]}`;
+    legend.appendChild(leg);
+  }
+}
+
+/* --- Scores --- */
+function renderScores() {
+  /* Compute live scores based on current positions */
+  computeFinalScores();
+
+  const container = document.getElementById('scores-container');
+  container.innerHTML = '';
+
+  /* Sort players by current score descending */
+  const playerOrder = Array.from({length: G.numPlayers}, (_,i) => i)
+    .sort((a,b) => (G.scores[b] || 0) - (G.scores[a] || 0));
+
+  playerOrder.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'score-card' + (p === G.currentPlayer ? ' current-turn' : '');
+    card.style.background = PLAYER_LIGHT[p];
+    card.style.borderColor = p === G.currentPlayer ? PLAYER_COLORS[p] : 'transparent';
+
+    if (p === G.currentPlayer) {
+      const crown = document.createElement('div');
+      crown.className = 'current-turn-crown';
+      crown.textContent = '🎲';
+      card.appendChild(crown);
+    }
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'score-name';
+    nameEl.innerHTML = `<span style="width:10px;height:10px;border-radius:50%;background:${PLAYER_COLORS[p]};display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,0.15)"></span><span style="color:${PLAYER_COLORS[p]}">${G.playerNames[p]}</span>`;
+    card.appendChild(nameEl);
+
+    const pts = document.createElement('div');
+    pts.innerHTML = `<span class="score-points" style="color:${PLAYER_COLORS[p]}">${G.scores[p] || 0}</span><span class="score-pts-label"> pts</span>`;
+    card.appendChild(pts);
+
+    /* Token positions */
+    const tokenRow = document.createElement('div');
+    tokenRow.className = 'score-tokens';
+    Object.values(G.tokens).filter(t => t.player === p).forEach(t => {
+      const tdot = document.createElement('div');
+      tdot.className = 'score-token-dot';
+      tdot.style.background = PLAYER_LIGHT[p];
+      tdot.innerHTML = `<span style="font-size:9px;font-weight:800;color:${PLAYER_COLORS[p]}">${t.label}</span><span style="color:#666">@${t.pos}</span>`;
+      tokenRow.appendChild(tdot);
+    });
+    card.appendChild(tokenRow);
+    container.appendChild(card);
+  });
+}
+
+/* --- Action Panel --- */
+function renderActionPanel() {
+  /* Tabs */
+  const moveTab = document.getElementById('move-tab');
+  const reorderTab = document.getElementById('reorder-tab');
+  moveTab.className = 'mode-tab' + (actionMode === 'move' ? ' active-move' : '');
+  reorderTab.className = 'mode-tab' + (actionMode === 'reorder' ? ' active-reorder' : '');
+
+  /* Hint */
+  const hint = document.getElementById('action-hint');
+  const selCount = document.getElementById('selection-count');
+  const reorderArea = document.getElementById('reorder-area');
+  const confirmBtn = document.getElementById('confirm-btn');
+
+  if (!actionMode) {
+    hint.textContent = 'Choose Move or Reorder, then click tikkis from the stack (top highlighted in ★).';
+    hint.style.borderLeftColor = 'var(--fire2)';
+    selCount.style.display = 'none';
+    reorderArea.style.display = 'none';
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Confirm';
+    confirmBtn.className = 'confirm-btn move-confirm';
+    return;
+  }
+
+  if (actionMode === 'move') {
+    hint.textContent = `Click 1–3 tikkis from the TOP of the stack (★ marked) to move them forward 1 step.`;
+    hint.style.borderLeftColor = 'var(--leaf)';
+    reorderArea.style.display = 'none';
+    confirmBtn.className = 'confirm-btn move-confirm';
+    confirmBtn.textContent = `⬆️ Move ${selectedIndices.length} Tikki(s)`;
+
+    if (selectedIndices.length > 0) {
+      selCount.style.display = 'block';
+      selCount.textContent = `${selectedIndices.length} tikki(s) selected — will move forward 1 step`;
+      confirmBtn.disabled = selectedIndices.length < 1;
+    } else {
+      selCount.style.display = 'none';
+      confirmBtn.disabled = true;
+    }
+
+  } else if (actionMode === 'reorder') {
+    hint.textContent = `Select 2 or 3 top tikkis, then arrange their new order in the panel below.`;
+    hint.style.borderLeftColor = 'var(--ocean)';
+    confirmBtn.className = 'confirm-btn reorder-confirm';
+
+    if (selectedIndices.length >= 2) {
+      selCount.style.display = 'block';
+      selCount.textContent = `${reorderOrder.length} tikkis selected for reordering`;
+
+      reorderArea.style.display = 'block';
+      const slotsEl = document.getElementById('reorder-slots');
+      slotsEl.innerHTML = '';
+
+      reorderOrder.forEach((id, slotIdx) => {
+        const t = G.tokens[id];
+        const slot = document.createElement('div');
+        slot.className = 'reorder-slot';
+        slot.style.borderColor = PLAYER_COLORS[t.player] + '60';
+
+        const numEl = document.createElement('div');
+        numEl.className = 'slot-number';
+        numEl.textContent = slotIdx + 1;
+        slot.appendChild(numEl);
+
+        const face = document.createElement('div');
+        face.style.cssText = `width:20px;height:20px;border-radius:50%;background:${PLAYER_COLORS[t.player]};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:white;flex-shrink:0`;
+        face.textContent = t.label;
+        slot.appendChild(face);
+
+        const nameEl = document.createElement('span');
+        nameEl.style.cssText = `flex:1;font-size:12px;color:${PLAYER_COLORS[t.player]};font-weight:700`;
+        nameEl.textContent = G.playerNames[t.player];
+        slot.appendChild(nameEl);
+
+        const dragHint = document.createElement('span');
+        dragHint.className = 'slot-drag-hint';
+        dragHint.textContent = '↩ move down';
+        slot.appendChild(dragHint);
+
+        slot.addEventListener('click', () => rotateReorderSlot(slotIdx));
+        slotsEl.appendChild(slot);
+      });
+
+      confirmBtn.textContent = '🔀 Confirm Reorder';
+      confirmBtn.disabled = reorderOrder.length < 2;
+    } else {
+      selCount.style.display = selectedIndices.length > 0 ? 'block' : 'none';
+      if (selectedIndices.length > 0) selCount.textContent = `${selectedIndices.length} selected — need at least 2`;
+      reorderArea.style.display = 'none';
+      confirmBtn.textContent = '🔀 Confirm Reorder';
+      confirmBtn.disabled = true;
+    }
+  }
+}
+
+/* --- Log --- */
+function renderLog() {
+  const logEl = document.getElementById('game-log');
+  logEl.innerHTML = '';
+  G.log.slice(0, 20).forEach(msg => {
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.textContent = msg;
+    logEl.appendChild(entry);
+  });
+}
+
+/* ============================================================
+   END SCREEN
+============================================================ */
+function showEndScreen() {
+  computeFinalScores();
+  document.getElementById('end-reason').textContent = G.endReason;
+
+  /* Sort players by score */
+  const ranked = Array.from({length: G.numPlayers}, (_,i) => i)
+    .sort((a,b) => G.scores[b] - G.scores[a]);
+
+  const podium = document.getElementById('end-podium');
+  podium.innerHTML = '';
+
+  ranked.forEach((p, rank) => {
+    const row = document.createElement('div');
+    row.className = 'podium-row';
+    row.style.borderColor = rank === 0 ? '#F9A825' : PLAYER_COLORS[p] + '40';
+
+    const medal = document.createElement('div');
+    medal.className = 'podium-medal';
+    medal.textContent = MEDALS[rank] || `${rank+1}.`;
+    row.appendChild(medal);
+
+    const nameDot = document.createElement('div');
+    nameDot.style.cssText = `width:12px;height:12px;border-radius:50%;background:${PLAYER_COLORS[p]};flex-shrink:0;border:2px solid rgba(0,0,0,0.1)`;
+    row.appendChild(nameDot);
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'podium-name';
+    nameEl.style.color = PLAYER_COLORS[p];
+    nameEl.textContent = G.playerNames[p];
+    row.appendChild(nameEl);
+
+    const scoreEl = document.createElement('div');
+    scoreEl.className = 'podium-score';
+    scoreEl.style.color = PLAYER_COLORS[p];
+    scoreEl.textContent = `${G.scores[p]} pts`;
+    row.appendChild(scoreEl);
+
+    podium.appendChild(row);
+  });
+
+  document.getElementById('end-overlay').classList.add('show');
+}
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+function goToSetup() {
+  document.getElementById('end-overlay').classList.remove('show');
+  document.getElementById('game-screen').classList.remove('active');
+  document.getElementById('setup-screen').classList.add('active');
+  G = null;
+  actionMode = null;
+  selectedIndices = [];
+  reorderOrder = [];
+}
+
+/* ============================================================
+   UTILITY
+============================================================ */
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+</script>
+</body>
+</html>
